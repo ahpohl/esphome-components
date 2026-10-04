@@ -5,7 +5,6 @@
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/ble_device_base/ble_device.h"
-#include "esphome/components/xiaomi_ble/xiaomi_ble.h"
 
 #include <vector>
 
@@ -13,10 +12,9 @@ namespace esphome::xiaomi_mccgq02hl {
 
 // Xiaomi Mijia Door/Window Sensor 2 (MCCGQ02HL), MiBeacon product id 0x098b.
 //
-// Self-contained on purpose: core xiaomi_ble's parse_xiaomi_header() does not
-// know this product id and parse_xiaomi_value() does not know the door
-// object, so this class does its own header and object parsing and borrows
-// only decrypt_xiaomi_payload() from core.
+// Self-contained on purpose: xiaomi_ble's parse_xiaomi_header() does not know
+// this product id and parse_xiaomi_value() does not know the door object, so
+// this class does its own header and object parsing and decryption.
 class XiaomiMCCGQ02HL final : public Component,
                               public binary_sensor::BinarySensorInitiallyOff,
                               public ble_device_base::ESPBTDeviceListener {
@@ -37,13 +35,14 @@ class XiaomiMCCGQ02HL final : public Component,
     optional<float> battery_level;
   };
 
-  bool parse_service_data_(std::vector<uint8_t> raw, Reading &reading);
-  static bool parse_objects_(const uint8_t *payload, size_t length, Reading &reading);
+  bool decrypt_(const uint8_t *frame, size_t size, size_t offset, uint8_t *plaintext) const;
+  bool parse_service_data_(const std::vector<uint8_t> &data, Reading &reading);
+  bool parse_objects_(const uint8_t *payload, size_t length, Reading &reading);
 
   uint64_t address_{0};
   uint8_t bindkey_[16]{};
-  // Per instance, unlike core's function-static counter which is shared by
-  // every Xiaomi device on the node.
+  // Per instance, unlike xiaomi_ble's function-static counter which is shared
+  // by every Xiaomi device on the node.
   optional<uint8_t> last_frame_count_;
   binary_sensor::BinarySensor *open_{nullptr};
   binary_sensor::BinarySensor *light_{nullptr};

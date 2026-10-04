@@ -19,9 +19,7 @@ from esphome.types import ConfigType
 CONF_HAS_LIGHT = "has_light"
 CONF_OPEN = "open"
 
-# xiaomi_ble is loaded only for decrypt_xiaomi_payload(); header and object
-# parsing live in this component, so core xiaomi_ble needs no patches.
-AUTO_LOAD = ["ble_device_base", "xiaomi_ble", "sensor"]
+AUTO_LOAD = ["ble_device_base", "sensor"]
 
 xiaomi_mccgq02hl_ns = cg.esphome_ns.namespace("xiaomi_mccgq02hl")
 XiaomiMCCGQ02HL = xiaomi_mccgq02hl_ns.class_(

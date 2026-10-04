@@ -7,9 +7,9 @@ External components for [ESPHome](https://esphome.io).
 Xiaomi Mijia Door/Window Sensor 2 (MCCGQ02HL, MiBeacon product id `0x098b`).
 Passive BLE, encrypted with a bindkey; no pairing, no effect on the sensor's battery.
 
-Self-contained: it does its own MiBeacon header and object parsing and uses only
-`xiaomi_ble::decrypt_xiaomi_payload()` from core, so core `xiaomi_ble` is not
-patched or shadowed. Requires ESPHome 2026.8 or newer (`ble_device_base`).
+Self-contained: it does its own MiBeacon header and object parsing and decrypts
+with `ble_device_base::aes_ccm_auth_decrypt()`, so it does not use or shadow core
+`xiaomi_ble`. Requires ESPHome 2026.8 or newer (`ble_device_base`).
 
 ```yaml
 external_components:
@@ -34,4 +34,5 @@ binary_sensor:
 Door object values: `0` open, `1` closed, `2` left open past the device's
 timeout (reported as open), `3` device reset (ignored).
 
-Originally submitted upstream as esphome/esphome#4605.
+Submitted upstream as esphome/esphome#20104 (superseding #4605), docs in
+esphome/esphome.io#7510. Once that is released, drop the `external_components:` entry.
