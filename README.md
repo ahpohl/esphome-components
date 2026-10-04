@@ -23,9 +23,7 @@ binary_sensor:
     name: "Front-Door"             # opening state (device_class: opening)
     mac_address: "E4:AA:EC:00:00:00"
     bindkey: "00112233445566778899aabbccddeeff"
-    open:                          # optional, same state as the top level
-      name: "Front-Door Open"
-    has_light:                     # optional, light above threshold
+    light:                         # optional, light above threshold
       name: "Front-Door Light"
     battery_level:                 # optional, %
       name: "Front-Door Battery-Level"
@@ -33,6 +31,7 @@ binary_sensor:
 
 Door object values: `0` open, `1` closed, `2` left open past the device's
 timeout (reported as open), `3` device reset (ignored).
+Unencrypted frames are ignored, since the bindkey is required.
 
 Submitted upstream as esphome/esphome#20104 (superseding #4605), docs in
 esphome/esphome.io#7510. Once that is released, drop the `external_components:` entry.

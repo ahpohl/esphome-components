@@ -4,6 +4,7 @@ import esphome.config_validation as cv
 from esphome.const import (
     CONF_BATTERY_LEVEL,
     CONF_BINDKEY,
+    CONF_LIGHT,
     CONF_MAC_ADDRESS,
     DEVICE_CLASS_BATTERY,
     DEVICE_CLASS_LIGHT,
@@ -13,11 +14,6 @@ from esphome.const import (
     UNIT_PERCENT,
 )
 from esphome.types import ConfigType
-
-# Defined locally so the component does not depend on keys that core
-# esphome.const may or may not carry.
-CONF_HAS_LIGHT = "has_light"
-CONF_OPEN = "open"
 
 AUTO_LOAD = ["ble_device_base", "sensor"]
 
@@ -38,10 +34,7 @@ CONFIG_SCHEMA = cv.All(
         {
             cv.Required(CONF_MAC_ADDRESS): cv.mac_address,
             cv.Required(CONF_BINDKEY): cv.bind_key,
-            cv.Optional(CONF_OPEN): binary_sensor.binary_sensor_schema(
-                device_class=DEVICE_CLASS_OPENING
-            ),
-            cv.Optional(CONF_HAS_LIGHT): binary_sensor.binary_sensor_schema(
+            cv.Optional(CONF_LIGHT): binary_sensor.binary_sensor_schema(
                 device_class=DEVICE_CLASS_LIGHT
             ),
             cv.Optional(CONF_BATTERY_LEVEL): sensor.sensor_schema(
@@ -66,12 +59,8 @@ async def to_code(config: ConfigType) -> None:
     cg.add(var.set_address(config[CONF_MAC_ADDRESS].as_hex))
     cg.add(var.set_bindkey(config[CONF_BINDKEY]))
 
-    if CONF_OPEN in config:
-        sens = await binary_sensor.new_binary_sensor(config[CONF_OPEN])
-        cg.add(var.set_open(sens))
-    if CONF_HAS_LIGHT in config:
-        sens = await binary_sensor.new_binary_sensor(config[CONF_HAS_LIGHT])
-        cg.add(var.set_light(sens))
-    if CONF_BATTERY_LEVEL in config:
-        sens = await sensor.new_sensor(config[CONF_BATTERY_LEVEL])
-        cg.add(var.set_battery_level(sens))
+    # sub_sensors()/sub_binary_sensors() are not in ESPHome 2026.8/2026.9 releases
+    if (battery_level := config.get(CONF_BATTERY_LEVEL)) is not None:
+        cg.add(var.set_battery_level(await sensor.new_sensor(battery_level)))
+    if (light := config.get(CONF_LIGHT)) is not None:
+        cg.add(var.set_light(await binary_sensor.new_binary_sensor(light)))
